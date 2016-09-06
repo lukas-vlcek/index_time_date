@@ -64,25 +64,13 @@ To find out how Elasticsearch can sort by finer grained values run:
 It is possible to get "unexpected" order of documents. Like the following example. It is interesting that (re-)running the `setup.sh` script can influence the order in which the documents are returned. 
 	
 ````
-"hits" : {
+  "hits" : {
     "total" : 3,
     "max_score" : null,
     "hits" : [ {
       "_index" : "1",
       "_type" : "test",
-      "_id" : "AVcAAexfMQGFxLlcPi3y",
-      "_score" : null,
-      "fields" : {
-        "date" : [ "2014-02-17T15:57:22.12345Z" ],
-        "date3" : [ "2014-02-17T15:57:22.1230+0000" ],
-        "date2" : [ "2014-02-17T15:57:22.123000+0000" ],
-        "date1" : [ "2014-02-17T15:57:22.123Z" ]
-      },
-      "sort" : [ 1392652642123 ]
-    }, {
-      "_index" : "1",
-      "_type" : "test",
-      "_id" : "AVcAAeydMQGFxLlcPi30",
+      "_id" : "AVcAFT10MQGFxLlcPi4C",
       "_score" : null,
       "fields" : {
         "date" : [ "2014-01-17T15:57:22.123456789Z" ],
@@ -94,7 +82,19 @@ It is possible to get "unexpected" order of documents. Like the following exampl
     }, {
       "_index" : "1",
       "_type" : "test",
-      "_id" : "AVcAAeyDMQGFxLlcPi3z",
+      "_id" : "AVcAFT02MQGFxLlcPi4A",
+      "_score" : null,
+      "fields" : {
+        "date" : [ "2014-01-17T15:57:22.12345Z" ],
+        "date3" : [ "2014-01-17T15:57:22.1230+0000" ],
+        "date2" : [ "2014-01-17T15:57:22.123000+0000" ],
+        "date1" : [ "2014-01-17T15:57:22.123Z" ]
+      },
+      "sort" : [ 1389974242123 ]
+    }, {
+      "_index" : "1",
+      "_type" : "test",
+      "_id" : "AVcAFT1eMQGFxLlcPi4B",
       "_score" : null,
       "fields" : {
         "date" : [ "2014-01-17T15:57:22.123456Z" ],
@@ -105,7 +105,13 @@ It is possible to get "unexpected" order of documents. Like the following exampl
       "sort" : [ 1389974242123 ]
     } ]
   }
+
 ````
+We can make conclusion that when sorting then all document falling into the same millisecond can be returned in random order (more specifically, the order seem to be determined by factors set at indexing time).
+
+More over we can see that when `_source` field is disabled and individual fields are `stored` then when we ask Elasticsearch for date field values we get only milliseconds resolution formated according to first custom format from mapping (`date2` and `date3`) or by default format (`date1`).
+
+Just for completeness the field `date` contains the original value as a string. This is only for us to make it easier to understand the output.
 	
 ### Range filter
 
