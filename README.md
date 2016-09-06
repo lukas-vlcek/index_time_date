@@ -11,9 +11,9 @@ There is some debate about what it would take to implement finer resolution:
 
 I created simple shell scripts to test how Elasticsearch handles the following use cases:
 
-- Autodetect finer date-time values as dates
-- How precisely ES can sort finer values
-- How precisely ES can execute range filters on the data [WIP]
+- [Autodetect finer date-time values as dates](#date-detection)
+- [How precisely ES can sort finer values](#sorting)
+- [How precisely ES can execute range filters on the data](#range-filter)
 
 ### How to run the test
 
