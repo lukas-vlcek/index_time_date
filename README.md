@@ -15,9 +15,24 @@ I created simple shell scripts to test how Elasticsearch handles the following u
 - How precisely ES can sort finer values
 - How precisely ES can execute range filters on the data [WIP]
 
-Run the test:
+### How to run the test
 
-	$ do.sh
+We assume empty cluster running on `http://localhost:9200` (tested with Elasticsearch `1.7.2`, `2.3.5`, `2.4.0`). First, prepare the cluster:
+
+	$ setup.sh
+
+Now, the cluster has required index template and contains seed data.
+
+### Date detection
+
+	$ curl -X GET 'localhost:9200/1/_mapping?pretty'
 	
-- assuming Elasticsearch runs on `http://localhost:9200`
-- tested with Elasticsearch `1.7.2`, `2.3.5`, `2.4.0`
+### Sorting
+
+	$ sorting.sh
+	
+### Range filter
+
+_Note: this is in WIP_
+
+	$ range_filter.sh

@@ -21,10 +21,3 @@ curl -X POST 'localhost:9200/_refresh'
 curl -X GET 'localhost:9200/_field_stats?pretty&fields=date1,date2,date3'
 
 curl -X GET 'localhost:9200/_count?pretty'
-
-curl 'localhost:9200/_search?pretty' -d '{
-  "fields": [ "date","date1","date2","date3" ],
-  "sort": {
-     "date3": "desc"
-  }
-}'
