@@ -49,10 +49,63 @@ In our case it has been correctly detected as a date despite the fact first valu
   "format" : "strict_date_optional_time||epoch_millis"
 }
 ````
+We can make conclusion that Elasticsearch recognises date-time values out-of-the-box as long it sticks to ISO format described here: <http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser-->.
+
+This grammar allows the `fraction` to consists of high number of digits (`digit+` = literally unlimited ?).
+	
+However, when indexing the date-time value the Elasticsearch keeps only the milliseconds resolution. See below.
 	
 ### Sorting
 
+To find out how Elasticsearch can sort by finer grained values run:
+
 	$ sorting.sh
+	
+It is possible to get "unexpected" order of documents. Like the following example. It is interesting that (re-)running the `setup.sh` script can influence the order in which the documents are returned. 
+	
+````
+"hits" : {
+    "total" : 3,
+    "max_score" : null,
+    "hits" : [ {
+      "_index" : "1",
+      "_type" : "test",
+      "_id" : "AVcAAexfMQGFxLlcPi3y",
+      "_score" : null,
+      "fields" : {
+        "date" : [ "2014-02-17T15:57:22.12345Z" ],
+        "date3" : [ "2014-02-17T15:57:22.1230+0000" ],
+        "date2" : [ "2014-02-17T15:57:22.123000+0000" ],
+        "date1" : [ "2014-02-17T15:57:22.123Z" ]
+      },
+      "sort" : [ 1392652642123 ]
+    }, {
+      "_index" : "1",
+      "_type" : "test",
+      "_id" : "AVcAAeydMQGFxLlcPi30",
+      "_score" : null,
+      "fields" : {
+        "date" : [ "2014-01-17T15:57:22.123456789Z" ],
+        "date3" : [ "2014-01-17T15:57:22.1230+0000" ],
+        "date2" : [ "2014-01-17T15:57:22.123000+0000" ],
+        "date1" : [ "2014-01-17T15:57:22.123Z" ]
+      },
+      "sort" : [ 1389974242123 ]
+    }, {
+      "_index" : "1",
+      "_type" : "test",
+      "_id" : "AVcAAeyDMQGFxLlcPi3z",
+      "_score" : null,
+      "fields" : {
+        "date" : [ "2014-01-17T15:57:22.123456Z" ],
+        "date3" : [ "2014-01-17T15:57:22.1230+0000" ],
+        "date2" : [ "2014-01-17T15:57:22.123000+0000" ],
+        "date1" : [ "2014-01-17T15:57:22.123Z" ]
+      },
+      "sort" : [ 1389974242123 ]
+    } ]
+  }
+````
 	
 ### Range filter
 
