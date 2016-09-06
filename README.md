@@ -17,11 +17,22 @@ I created simple shell scripts to test how Elasticsearch handles the following u
 
 ### How to run the test
 
-We assume empty cluster running on `http://localhost:9200` (tested with Elasticsearch `1.7.2`, `2.3.5`, `2.4.0`). First, prepare the cluster:
+We assume empty cluster running on `http://localhost:9200` (tested with Elasticsearch `1.7.2`, `2.3.5`, `2.4.0`). First, prepare index template and data in the cluster:
 
 	$ setup.sh
 
-Now, the cluster has required index template and contains seed data.
+We have indexed couple of documents into the cluster. The documents look like the following example:
+
+````
+{
+  "date":  "2014-01-17T15:57:22.123456Z",
+  "date1": "2014-01-17T15:57:22.123456Z",
+  "date2": "2014-01-17T15:57:22.123456Z",
+  "date3": "2014-01-17T15:57:22.123456Z"  
+}
+````
+Source values are defined by [`array.sh`](array.sh) script. For each value from this script a new document is created and indexed.
+
 
 ### Date detection
 
