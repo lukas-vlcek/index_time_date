@@ -36,7 +36,19 @@ Source values are defined by [`array.sh`](array.sh) script. For each value from 
 
 ### Date detection
 
+We define some field types in advance in [`template.sh`](template.sh), except the field `"date1"`. To see what type has been detected for this field run:
+
 	$ curl -X GET 'localhost:9200/1/_mapping?pretty'
+	
+In our case it has been correctly detected as a date despite the fact first value in [`array.sh`](array.sh) represents finer-than-milliseconds resolution:
+
+````
+"date1" : {
+  "type" : "date",
+  "store" : true,
+  "format" : "strict_date_optional_time||epoch_millis"
+}
+````
 	
 ### Sorting
 
