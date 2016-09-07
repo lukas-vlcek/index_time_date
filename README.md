@@ -24,7 +24,7 @@ We assume empty cluster running on `http://localhost:9200` (tested with Elastics
 	cd ${PROJECT_HOME}
 	setup.sh
 	
-### What is going on behind the scene
+## What is going on behind the scene
 
 When the [`setup.sh`](setup.sh) script is run, it removes all data from testing index, add index template, and index seed data into testing index in ES cluster.
 
@@ -84,9 +84,9 @@ This gives us understanding about resolution of date values indexed by Elasticse
       }
 ````
 
-### Date detection
+## Date detection
 
-We define some field types in advance in [`template.sh`](template.sh), except the field `"date1"`. To see what type has been detected for this field run:
+We define some field types in advance in [`template.sh`](template.sh), except for field `"date1"`. To see what type has been detected for this field run:
 
 	curl -X GET 'localhost:9200/1/_mapping?pretty'
 	
@@ -100,26 +100,26 @@ In our case it has been correctly detected as a date despite the fact first valu
 }
 ````
 
-#### Conclusions
+### Conclusions
 
-##### I.)
-We can make conclusion that Elasticsearch recognises date-time values out-of-the-box as long as it sticks to ISO format described here: <http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser-->.
+#### I.)
+We can make conclusion that Elasticsearch can **recognise date-time value and parse it out-of-the-box** as long as it sticks to ISO format described here: <http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser-->.
 
-This grammar defines the `fraction` to consists of high number of digits (`digit+` = literally unlimited?).
+Note the `fraction` part can consists of very **high number of digits** (`digit+` = literally unlimited?).
 	
 --	
-##### II.)
+#### II.)
 However, when indexing the date-time value the Elasticsearch keeps only the **milliseconds resolution** internally. (We have seen this already in field stats output above and will again verify using sorting below.)
 
 --
 	
-### Sorting
+## Sorting
 
-To find out how Elasticsearch can sort by finer grained values run:
+To find if Elasticsearch can correctly sort by finer grained values run:
 
 	sorting.sh
 	
-It is possible to get "unexpected" order of documents. Like the following example. It is interesting that (re-)running the `setup.sh` script can influence the order in which the documents are returned. 
+It is possible to get "unexpected" order of documents. Like the following example. It is interesting that (re-)running the `setup.sh` script can influence order in which the documents are returned. 
 	
 ````
   "hits" : {
@@ -166,23 +166,23 @@ It is possible to get "unexpected" order of documents. Like the following exampl
 
 ````
 
-#### Conclusions
+### Conclusions
 
-##### I.)
-We can make conclusion that when sorting then all document falling into the same millisecond can be returned in random order (more specifically, the order seem to be determined by internal ES factors at indexing time).
+#### I.)
+We can make conclusion that when sorting then all **document falling into the same millisecond can be returned in random order** (more specifically, the order seem to be determined by internal ES factors at indexing time).
 
 --
-##### II.)
+#### II.)
 More over, we can see that when `_source` field is disabled and individual fields are `stored` (see [`template.sh`](template.sh)) then when we ask Elasticsearch for date field values we get only milliseconds resolution formated according to first custom format from mapping (`date2` and `date3`) or by default format (`date1`).
 
 This means that if we want to **get original date-time value** we either have to:
 
 - store it as a string into another field (this is what we use field `date` for)
-- or we must enable `_source`
+- or we must enable `_source` (which requires more disk space)
 
 --
 	
-### Range filter
+## Range filter
 
 _Note: this is in WIP_
 
