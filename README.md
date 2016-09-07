@@ -15,13 +15,19 @@ I created simple shell scripts to test how Elasticsearch handles the following u
 - [How precisely ES can sort finer values](#sorting)
 - [How precisely ES can execute range filters on the data](#range-filter)
 
-### How to run the test
+# How to run the test
 
-We assume empty cluster running on `http://localhost:9200` (tested with Elasticsearch `1.7.2`, `2.3.5`, `2.4.0`). First, prepare index template and data in the cluster:
+We assume empty cluster running on `http://localhost:9200` (tested with Elasticsearch `1.7.2`, `2.3.5`, `2.4.0`):
 
-	$ setup.sh
+	git clone https://github.com/lukas-vlcek/index_time_date.git index_time_date
+	cd index_time_date
+	setup.sh
+	
+### What is going on behind the scene
 
-We have indexed couple of documents into the cluster. The documents look like the following example:
+When the `setup.sh` script is run, it removes all data from testing index, add index template, and index seed data into testing index in ES cluster.
+
+The documents that were indexed look like the following example:
 
 ````
 {
@@ -33,12 +39,55 @@ We have indexed couple of documents into the cluster. The documents look like th
 ````
 Source values are defined by [`array.sh`](array.sh) script. For each value from this script a new document is created and indexed.
 
+One of the last commands the [`setup.sh`](setup.sh) script does is getting  field stats like:
+
+	curl -X GET 'localhost:9200/1/_field_stats?pretty&fields=date1,date2,date3'
+	
+This gives us understanding about resolution of date values indexed by Elasticsearch. We can see that all date fields (`date1`, `date2` and `date3`) contains the same `"min_value"` and `"max_value"`.
+
+````
+      "fields" : {
+        "date3" : {
+          "max_doc" : 3,
+          "doc_count" : 3,
+          "density" : 100,
+          "sum_doc_freq" : 12,
+          "sum_total_term_freq" : -1,
+          "min_value" : 1389974242123,
+          "min_value_as_string" : "2014-01-17T15:57:22.1230+0000",
+          "max_value" : 1389974242123,
+          "max_value_as_string" : "2014-01-17T15:57:22.1230+0000"
+        },
+        "date2" : {
+          "max_doc" : 3,
+          "doc_count" : 3,
+          "density" : 100,
+          "sum_doc_freq" : 12,
+          "sum_total_term_freq" : -1,
+          "min_value" : 1389974242123,
+          "min_value_as_string" : "2014-01-17T15:57:22.123000+0000",
+          "max_value" : 1389974242123,
+          "max_value_as_string" : "2014-01-17T15:57:22.123000+0000"
+        },
+        "date1" : {
+          "max_doc" : 3,
+          "doc_count" : 3,
+          "density" : 100,
+          "sum_doc_freq" : 12,
+          "sum_total_term_freq" : -1,
+          "min_value" : 1389974242123,
+          "min_value_as_string" : "2014-01-17T15:57:22.123Z",
+          "max_value" : 1389974242123,
+          "max_value_as_string" : "2014-01-17T15:57:22.123Z"
+        }
+      }
+````
 
 ### Date detection
 
 We define some field types in advance in [`template.sh`](template.sh), except the field `"date1"`. To see what type has been detected for this field run:
 
-	$ curl -X GET 'localhost:9200/1/_mapping?pretty'
+	curl -X GET 'localhost:9200/1/_mapping?pretty'
 	
 In our case it has been correctly detected as a date despite the fact first value in [`array.sh`](array.sh) represents finer-than-milliseconds resolution:
 
@@ -49,6 +98,9 @@ In our case it has been correctly detected as a date despite the fact first valu
   "format" : "strict_date_optional_time||epoch_millis"
 }
 ````
+
+#### Conclusion
+
 We can make conclusion that Elasticsearch recognises date-time values out-of-the-box as long it sticks to ISO format described here: <http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser-->.
 
 This grammar allows the `fraction` to consists of high number of digits (`digit+` = literally unlimited ?).
@@ -59,7 +111,7 @@ However, when indexing the date-time value the Elasticsearch keeps only the mill
 
 To find out how Elasticsearch can sort by finer grained values run:
 
-	$ sorting.sh
+	sorting.sh
 	
 It is possible to get "unexpected" order of documents. Like the following example. It is interesting that (re-)running the `setup.sh` script can influence the order in which the documents are returned. 
 	
@@ -107,6 +159,9 @@ It is possible to get "unexpected" order of documents. Like the following exampl
   }
 
 ````
+
+#### Conclusion
+
 We can make conclusion that when sorting then all document falling into the same millisecond can be returned in random order (more specifically, the order seem to be determined by factors set at indexing time).
 
 More over we can see that when `_source` field is disabled and individual fields are `stored` then when we ask Elasticsearch for date field values we get only milliseconds resolution formated according to first custom format from mapping (`date2` and `date3`) or by default format (`date1`).
@@ -117,4 +172,4 @@ Just for completeness the field `date` contains the original value as a string. 
 
 _Note: this is in WIP_
 
-	$ range_filter.sh
+	range_filter.sh
