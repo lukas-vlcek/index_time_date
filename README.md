@@ -184,6 +184,14 @@ This means that if we want to **get original date-time value** we either have to
 	
 ## Range filter
 
-_Note: this is in WIP_
+[Range query](https://www.elastic.co/guide/en/elasticsearch/reference/2.4/query-dsl-range-query.html) is used to test ability of ES to filter data based on finer-grained date values.
 
 	range_filter.sh
+	
+The [`range_filter.sh`](range_filter.sh) script runs two queries, one using filter `gte` (greater-than-or-equal) and second using `lte` (lower-than-or-equal). Basically, we take date values from the [`array.sh`](array.sh) one at a time and use each value to test if we can split set of indexed documents into two sets: those documents that are greater (or equal) and those that are lower (or equal) than given value.
+
+In our particular case ES always selects all indexed documents (or none if `gte` and `lte` are changed to `gt` and `le` respectively). Which is not correct.
+
+### Conclusion
+
+Filtering does not support finer grained resolution than milliseconds.
