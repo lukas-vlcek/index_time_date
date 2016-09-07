@@ -19,17 +19,19 @@ I created simple shell scripts to test how Elasticsearch handles the following u
 
 We assume empty cluster running on `http://localhost:9200` (tested with Elasticsearch `1.7.2`, `2.3.5`, `2.4.0`):
 
-	git clone https://github.com/lukas-vlcek/index_time_date.git index_time_date
-	cd index_time_date
+	export PROJECT_HOME=index_time_date
+	git clone https://github.com/lukas-vlcek/index_time_date.git ${PROJECT_HOME}
+	cd ${PROJECT_HOME}
 	setup.sh
 	
 ### What is going on behind the scene
 
-When the `setup.sh` script is run, it removes all data from testing index, add index template, and index seed data into testing index in ES cluster.
+When the [`setup.sh`](setup.sh) script is run, it removes all data from testing index, add index template, and index seed data into testing index in ES cluster.
 
-The documents that were indexed look like the following example:
+Number of indexed documents and their content is determined by [`array.sh`](array.sh) script. For each array value in this script a new document is created and indexed.
 
 ````
+# E.g. value "2014-01-17T15:57:22.123456Z" yields document:
 {
   "date":  "2014-01-17T15:57:22.123456Z",
   "date1": "2014-01-17T15:57:22.123456Z",
@@ -37,13 +39,12 @@ The documents that were indexed look like the following example:
   "date3": "2014-01-17T15:57:22.123456Z"  
 }
 ````
-Source values are defined by [`array.sh`](array.sh) script. For each value from this script a new document is created and indexed.
 
 One of the last commands the [`setup.sh`](setup.sh) script does is getting  field stats like:
 
 	curl -X GET 'localhost:9200/1/_field_stats?pretty&fields=date1,date2,date3'
 	
-This gives us understanding about resolution of date values indexed by Elasticsearch. We can see that all date fields (`date1`, `date2` and `date3`) contains the same `"min_value"` and `"max_value"`.
+This gives us understanding about resolution of date values indexed by Elasticsearch. We can see that all date fields (`date1`, `date2` and `date3`) contain the same `"min_value"` and `"max_value"`.
 
 ````
       "fields" : {
@@ -99,13 +100,18 @@ In our case it has been correctly detected as a date despite the fact first valu
 }
 ````
 
-#### Conclusion
+#### Conclusions
 
-We can make conclusion that Elasticsearch recognises date-time values out-of-the-box as long it sticks to ISO format described here: <http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser-->.
+##### I.)
+We can make conclusion that Elasticsearch recognises date-time values out-of-the-box as long as it sticks to ISO format described here: <http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser-->.
 
-This grammar allows the `fraction` to consists of high number of digits (`digit+` = literally unlimited ?).
+This grammar defines the `fraction` to consists of high number of digits (`digit+` = literally unlimited?).
 	
-However, when indexing the date-time value the Elasticsearch keeps only the milliseconds resolution. See below.
+--	
+##### II.)
+However, when indexing the date-time value the Elasticsearch keeps only the **milliseconds resolution** internally. (We have seen this already in field stats output above and will again verify using sorting below.)
+
+--
 	
 ### Sorting
 
@@ -160,13 +166,21 @@ It is possible to get "unexpected" order of documents. Like the following exampl
 
 ````
 
-#### Conclusion
+#### Conclusions
 
-We can make conclusion that when sorting then all document falling into the same millisecond can be returned in random order (more specifically, the order seem to be determined by factors set at indexing time).
+##### I.)
+We can make conclusion that when sorting then all document falling into the same millisecond can be returned in random order (more specifically, the order seem to be determined by internal ES factors at indexing time).
 
-More over we can see that when `_source` field is disabled and individual fields are `stored` then when we ask Elasticsearch for date field values we get only milliseconds resolution formated according to first custom format from mapping (`date2` and `date3`) or by default format (`date1`).
+--
+##### II.)
+More over, we can see that when `_source` field is disabled and individual fields are `stored` (see [`template.sh`](template.sh)) then when we ask Elasticsearch for date field values we get only milliseconds resolution formated according to first custom format from mapping (`date2` and `date3`) or by default format (`date1`).
 
-Just for completeness the field `date` contains the original value as a string. This is only for us to make it easier to understand the output.
+This means that if we want to **get original date-time value** we either have to:
+
+- store it as a string into another field (this is what we use field `date` for)
+- or we must enable `_source`
+
+--
 	
 ### Range filter
 
