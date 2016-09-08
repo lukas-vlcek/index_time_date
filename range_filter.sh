@@ -8,7 +8,7 @@ for i in "${!arr[@]}"; do
     \"fields\": [ \"date\" ],
     \"filter\": {
       \"range\": {
-        \"date1\": {
+        \"date2\": {
           \"gte\": \"${arr[$i]}\"
         }
       }
@@ -19,7 +19,7 @@ for i in "${!arr[@]}"; do
     \"fields\": [ \"date\" ],
     \"filter\": {
       \"range\": {
-        \"date1\": {
+        \"date2\": {
           \"lte\": \"${arr[$i]}\"
         }
       }

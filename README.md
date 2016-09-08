@@ -1,3 +1,5 @@
+# Low resolution dates in Elasticsearch
+
 Elasticsearch documentation states that [`date` datetype](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html) resolution is up to milliseconds:
 
 > Internally, dates are converted to UTC (if the time-zone is specified) and stored as a long number representing milliseconds-since-the-epoch.
@@ -14,6 +16,7 @@ I created simple shell scripts to test how Elasticsearch handles the following u
 - [Autodetect finer date-time values as dates](#date-detection)
 - [How precisely ES can sort finer values](#sorting)
 - [How precisely ES can execute range filters on the data](#range-filter)
+- [Accuracy of aggregations](#accuracy-of-aggregations)
 
 # How to run the test
 
@@ -169,16 +172,18 @@ It is possible to get "unexpected" order of documents. Like the following exampl
 ### Conclusions
 
 #### I.)
-We can make conclusion that when sorting then all **document falling into the same millisecond can be returned in random order** (more specifically, the order seem to be determined by internal ES factors at indexing time).
+We can make conclusion that when sorting then all **document falling into the same millisecond can be returned in random order** (more specifically, the order seem to be determined by internal ES factors at indexing time). 
+
+As a workaround one can introduce secondary field to store needed fraction number and use this field as a secondary sort value.
 
 --
 #### II.)
 More over, we can see that when `_source` field is disabled and individual fields are `stored` (see [`template.sh`](template.sh)) then when we ask Elasticsearch for date field values we get only milliseconds resolution formated according to first custom format from mapping (`date2` and `date3`) or by default format (`date1`).
 
-This means that if we want to **get original date-time value** we either have to:
+This means that if we want to **get original date-time value** back from Elasticsearch we either have to:
 
-- store it as a string into another field (this is what we use field `date` for)
-- or we must enable `_source` (which requires more disk space)
+- index value as non analyzed string into \[another\] field (this is what we use field `date` for)
+- or we must **disable `store`** for particular field and **enable `_source`** (which requires more disk space) at the same time, however, any custom **date-time format in mapping is ignored** in the case and the value is returned as is
 
 --
 	
@@ -195,3 +200,9 @@ In our particular case ES always selects all indexed documents (or none if `gte`
 ### Conclusion
 
 Filtering does not support finer grained resolution than milliseconds.
+
+## Accuracy of aggregations
+
+TBD.
+
+General assumption is that aggregations are impacted as well, although it will be interesting to see if script based aggregations can provide some kind of workaround.
