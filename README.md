@@ -185,7 +185,7 @@ This means that if we want to **get original date-time value** back from Elastic
 - index value as non analyzed string into \[another\] field (this is what we use field `date` for)
 - or we must **disable `store`** for particular field and **enable `_source`** (which requires more disk space) at the same time, however, any custom **date-time format in mapping is ignored** in the case and the value is returned as is
 
-Note: disabling `_source` will probably not be possible from specific ES version, see <https://github.com/elastic/elasticsearch/pull/10915>. (TODO investigate more).
+Note: disabling `_source` might not be possible for some future ES version, see <https://github.com/elastic/elasticsearch/pull/10915> and <https://github.com/elastic/elasticsearch/pull/11171> which reverted this change back. (TODO investigate more).
 
 --
 	
