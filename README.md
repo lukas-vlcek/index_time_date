@@ -176,6 +176,8 @@ We can make conclusion that when sorting then all **document falling into the sa
 
 As a workaround one can introduce secondary field to store needed fraction number and use this field as a secondary sort value.
 
+_References: Read more about [Doc Values](https://www.elastic.co/guide/en/elasticsearch/guide/current/docvalues-intro.html), the underlying data structure used by Elasticsearch when sorting on a field._
+
 --
 #### II.)
 More over, we can see that when `_source` field is disabled and individual fields are `stored` (see [`template.sh`](template.sh)) then when we ask Elasticsearch for date field values we get only milliseconds resolution formated according to first custom format from mapping (`date2` and `date3`) or by default format (`date1`).
@@ -185,7 +187,15 @@ This means that if we want to **get original date-time value** back from Elastic
 - index value as non analyzed string into \[another\] field (this is what we use field `date` for)
 - or we must **disable `store`** for particular field and **enable `_source`** (which requires more disk space) at the same time, however, any custom **date-time format in mapping is ignored** in the case and the value is returned as is
 
-Note: disabling `_source` might not be possible for some future ES version, see <https://github.com/elastic/elasticsearch/pull/10915> and <https://github.com/elastic/elasticsearch/pull/11171> which reverted this change back. (TODO investigate more).
+Note: disabling `_source` might not be possible for some future ES versions, see <https://github.com/elastic/elasticsearch/pull/10915> and <https://github.com/elastic/elasticsearch/pull/11171> which reverted this change back.
+
+The `_source` field seems to be a bit "confusing and controversial" topic in Elasticsearch. For example, the official documentation [reads](https://www.elastic.co/guide/en/elasticsearch/guide/2.x/root-object.html#source-field) that: 
+
+> The whole document is already stored as the `_source` field. It is almost always better to just extract the fields that you need by using the `_source` parameter.
+
+but Simon W. says [here](https://github.com/elastic/elasticsearch/issues/20068#issuecomment-244399363):
+
+> I am personally convinced we should never access `_source` in an aggregation. I think the majority of the users do NOT understand what that means ie. decompressing the ENTIRE document to access a single field.
 
 --
 	
