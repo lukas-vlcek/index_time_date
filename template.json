@@ -6,7 +6,11 @@
         {
           "dates": {
             "match_mapping_type": "date",
-            "mapping": { "store": true }
+            "mapping": {
+              "store": true,
+              "doc_values": true,
+              "index": "not_analyzed"
+            }
           } 
         }
       ],
@@ -14,9 +18,26 @@
         "enabled": false
       },
       "properties": {
-        "date":  { "type": "string", "store": true, "index": "not_analyzed" },
-        "date2": { "type": "date", "store": true, "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||yyyy-MM-dd'T'HH:mm:ssZ||dateOptionalTime" },
-        "date3": { "type": "date", "store": true, "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSZ||dateOptionalTime" }
+        "date":  {
+          "type": "string",
+          "store": true,
+          "doc_values": true,
+          "index": "not_analyzed"
+        },
+        "date2": {
+          "type": "date",
+          "store": true,
+          "doc_values": true,
+          "index": "not_analyzed",
+          "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ||yyyy-MM-dd'T'HH:mm:ssZ||dateOptionalTime"
+        },
+        "date3": {
+          "type": "date",
+          "store": true,
+          "doc_values": true,
+          "index": "not_analyzed",
+          "format": "yyyy-MM-dd'T'HH:mm:ss.SSSSZ||dateOptionalTime"
+        }
       }
     }
   }
