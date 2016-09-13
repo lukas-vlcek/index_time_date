@@ -122,7 +122,7 @@ To find if Elasticsearch can correctly sort by finer grained values run:
 
 	sorting.sh
 	
-It is possible to get "unexpected" order of documents. Like the following example. It is interesting that (re-)running the `setup.sh` script can influence order in which the documents are returned. 
+It is possible to get "unexpected" order of documents. Like the following example. It is interesting that (re-)running the `setup.sh` script can (i.e. reindexing the data) influence order in which the documents are returned. 
 	
 ````
   "hits" : {
@@ -176,7 +176,15 @@ We can make conclusion that when sorting then all **document falling into the sa
 
 As a workaround one can introduce secondary field to store needed fraction number and use this field as a secondary sort value.
 
-_References: Read more about [Doc Values](https://www.elastic.co/guide/en/elasticsearch/guide/current/docvalues-intro.html), the underlying data structure used by Elasticsearch when sorting on a field._
+### More details about ES implementation:
+
+Efficient sorting on field data has gone through some evolution in ES. Important improvement was addition of [Doc Values](https://www.elastic.co/guide/en/elasticsearch/guide/current/docvalues-intro.html), the underlying data structure used by Elasticsearch when sorting on a field.
+
+Note that in ES `1.7` one has to [enable the doc values explicitely in mapping for date type](https://www.elastic.co/guide/en/elasticsearch/reference/1.7/mapping-core-types.html#date) by settings [fielddata](https://www.elastic.co/guide/en/elasticsearch/reference/1.7/fielddata-formats.html) (it was not by default enabled for [number field data](https://www.elastic.co/guide/en/elasticsearch/reference/1.7/fielddata-formats.html#_numeric_field_data_types)).
+
+Starting with ES `2.x` (not sure which version specifically) it is enabled by [default for dates](https://www.elastic.co/guide/en/elasticsearch/reference/2.4/date.html#date-params).
+
+_Just for completeness: Older blog post [introducing Doc Values](https://www.elastic.co/blog/disk-based-field-data-a-k-a-doc-values) for ES `1.x`, some info can be dated - especially about mapping and enabling?_
 
 --
 #### II.)
@@ -196,6 +204,8 @@ The `_source` field seems to be a bit "confusing and controversial" topic in Ela
 but Simon W. says [here](https://github.com/elastic/elasticsearch/issues/20068#issuecomment-244399363):
 
 > I am personally convinced we should never access `_source` in an aggregation. I think the majority of the users do NOT understand what that means ie. decompressing the ENTIRE document to access a single field.
+
+I \*think\* that if Doc Values are available for the field being sorted on or aggregating on then the `_source` is not accessed. The comment from Simon W. above was made in connection to accessing `_source` within aggregation (for example from scripts or by other means).
 
 --
 	
